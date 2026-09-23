@@ -1,5 +1,7 @@
 # dsh-completion-supervisor
 
+**English** | [简体中文](README.zh-CN.md)
+
 Checks whether an agent's "done" is actually true, using Jev as a fast typed classifier rather than an LLM.
 
 **Status: deterministic enforcement + Jev observation (`policy_v 3`).** Three rules may steer a turn,
