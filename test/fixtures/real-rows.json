@@ -1,0 +1,203 @@
+{
+  "_source": "Verbatim rows copied from ~/.dsh/completion-supervisor/assessments.jsonl on 2026-09-20, written by the real DSH plugin during the post-restart E2E run. Nothing here is hand-written.",
+  "_why": "The plugin's unit tests must be able to fail the way reality fails. Every bug found so far was found by reading rows like these, not by a synthetic case: (1) `arguments` is a JSON string in the real session log, not an object; (2) `repo.available` was missing from the facts, making an unreadable repository indistinguishable from a clean one; (3) `[exit code: N]` carries the shell host's code, not the child's.",
+  "_rows": [
+    {
+      "_note": "Subagent that ran `npm test` in a directory with no package.json. Recorded tests_run=true / tests_passed=false, and the policy chose `continue` via P3. This row is only reachable when the `arguments` JSON-string fix is in place: before it, every command parsed as empty and tests_run was permanently false.",
+      "row": {
+        "log_v": 1,
+        "row": "assessment",
+        "assessment_id": "a596f0fa-0c45-4590-be77-506c1ff74fa3",
+        "at": "2026-09-19T17:42:18.571Z",
+        "session_id": "9afd50f1-dda2-4b32-a357-ad379a373630",
+        "turn": 1,
+        "cwd": "C:\\Users\\lxb-tuf\\Desktop\\git cloud",
+        "trigger": "turn-stopping",
+        "shadow": true,
+        "prompt_v": 1,
+        "policy_v": 1,
+        "task_v": 1,
+        "fingerprint_v": 1,
+        "fingerprint": "5e60c4be",
+        "changed_fields": [
+          "goal",
+          "claim",
+          "changed_files",
+          "untracked",
+          "insertions",
+          "deletions",
+          "repo_available",
+          "tests_run",
+          "tests_passed",
+          "build_ok",
+          "lint_ok",
+          "errors",
+          "unverified_claims",
+          "commands"
+        ],
+        "state_tokens_est": 2202,
+        "state_stage": "full",
+        "facts": {
+          "changed_files_n": 0,
+          "untracked_n": 0,
+          "insertions": null,
+          "deletions": null,
+          "tests_run": true,
+          "tests_passed": false,
+          "build_ok": null,
+          "lint_ok": null,
+          "error_results_n": 0,
+          "unverified_claims_n": 0,
+          "tool_calls_this_turn": 7
+        },
+        "jev": null,
+        "jev_error": {
+          "kind": "no_key",
+          "message": "TYPESAFE_API_KEY is not configured"
+        },
+        "decision": {
+          "action": "continue",
+          "reason": "the recorded test run did not pass",
+          "rule": "P3_failing_tests",
+          "applied": false
+        },
+        "latency_ms": { "total": 0, "jev": null },
+        "cost_usd_est": 0,
+        "ground_truth": null
+      }
+    }
+  ],
+  "_session_events": {
+    "_source_event": "One complete tool/call + tool/result pair, copied verbatim from a real session log at ~/.dsh/sessions/--C-Users-lxb-tuf-Desktop-git~0020cloud--/<id>/session.v3.jsonl.zstd (zstd-decoded). `arguments` is a STRING — this is the single most important shape fact in the whole fixture set.",
+    "tool_call": {
+      "type": "tool/call",
+      "seq": 18,
+      "time": 1789838013750,
+      "data": {
+        "turn": 1,
+        "step": 1,
+        "callId": "call_00_4YPj8LtOMF603lVoUZ4c3368",
+        "name": "pwsh",
+        "arguments": "{\"command\":\"npm test\",\"timeoutMs\":120000}"
+      }
+    },
+    "tool_result": {
+      "type": "tool/result",
+      "seq": 19,
+      "time": 1789838013760,
+      "data": {
+        "turn": 1,
+        "step": 1,
+        "message": {
+          "source": { "kind": "tool", "callId": "call_00_4YPj8LtOMF603lVoUZ4c3368" },
+          "content": [
+            {
+              "type": "tool-result",
+              "toolCallId": "call_00_4YPj8LtOMF603lVoUZ4c3368",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "npm error code ENOENT\nnpm error enoent Could not read package.json\n[exit code: 1]"
+                }
+              ],
+              "isError": false
+            }
+          ],
+          "role": "user",
+          "id": "f85933b8-72dc-427f-8014-9e66f2e034ae"
+        }
+      },
+      "sourceEventSeqs": [18],
+      "surfaceOp": "append"
+    }
+  },
+  "_exit_code_measurement": {
+    "_why": "The marker contract was measured directly, because assuming it would have been wrong in a way that only shows up as 'slightly suspicious numbers' in a log nobody re-reads.",
+    "_authoritative_source": "@deepseek-ai/dsh-tool-pwsh/lib/index.js:59-79 `renderPwshResult` builds the model-facing text as `body` followed by markers, pushing `[exit code: ${result.exitCode}]` ONLY when `result.exitCode !== 0` and only as the LAST line. `result.exitCode` is the pwsh HOST process's code (dsh-pwsh-local/lib/index.js:364-368 assigns `proc.exitCode = outcome.exitCode`). The marker is therefore absent on success and carries the host code on failure.",
+    "observations": [
+      {
+        "command": "node -e \"process.exit(7)\"",
+        "real_child_exit": 7,
+        "dsh_marker": "[exit code: 1]",
+        "note": "pwsh normalises a non-zero child status to 1 at the host level. Measured in this session, twice, by two independent runs."
+      },
+      {
+        "command": "npm test   (no package.json in cwd)",
+        "real_child_exit": 1,
+        "dsh_marker": "[exit code: 1]",
+        "note": "Coincides, which is exactly why the 7 case had to be measured."
+      },
+      {
+        "command": "npm --version",
+        "real_child_exit": 0,
+        "dsh_marker": "(absent)",
+        "note": "renderPwshResult adds no marker for exit 0 — so 'no marker' means success, and parseExitCode's 0 default is the contract, not a guess."
+      }
+    ],
+    "conclusion": "The marker is authoritative for ZERO versus NON-ZERO and must not be read as a child process's exact exit status. This matches DSH's own contract: `parseExitStatus` in @deepseek-ai/dsh-shell (lib/index.js:31-46) recovers `exitCode` from this marker and nothing else."
+  },
+  "_truncation_measurement": {
+    "_why": "The same real output that carries the exit marker is also the output most likely to be long. Whether the reader keeps the head or the tail decides whether a failing test suite is reported as failing.",
+    "observation": {
+      "input": "900 lines of 'not ok N - some assertion failed' plus a trailing '[exit code: 1]' (31,404 chars total)",
+      "head_read_at_4000_chars": "ends mid-assertion, marker absent, parseExitCode returns 0",
+      "verdict_before_fix": "a FAILING test suite recorded as passing",
+      "fix": "tool results are read from the TAIL (TOOL_RESULT_TEXT_LIMIT = 20000); prose still reads from the head"
+    }
+  },
+  "_user_message_source_measurement": {
+    "_why": "The plugin decides TWO things from `user/message` events: which text is the user's requirement, and when a new task begins (which resets the assessment budget). Both call sites tested `source.kind` against a deny-list of two values and accepted everything else as the human. A live session log shows how wrong that is.",
+    "_measured_on": "C:\\Users\\lxb-tuf\\.dsh\\sessions\\--C-Users-lxb-tuf-Desktop-git~0020cloud--\\session-57cbd8f4-d6e5-4772-bbf2-7219409310be\\session.v3.jsonl.zstd — 4125 JSONL lines across 2365 concatenated zstd frames, decoded with tools/decode-session.mjs",
+    "_counts_by_source": {
+      "subagent-settled": 13,
+      "plugin (hindsight)": 9,
+      "agent-message": 6,
+      "agent-instructions": 5,
+      "plugin (@deepseek-ai/dsh-system-prompt)": 5,
+      "skill-catalog": 5,
+      "plugin (compact)": 4,
+      "plugin (agent-mailbox)": 3,
+      "user": 14
+    },
+    "_real_user_source_verbatim": {
+      "kind": "user",
+      "rpcId": "a3de145c-c637-464d-81f7-b23a7debb465",
+      "clientTimeZone": "Asia/Hong_Kong"
+    },
+    "_first_six_user_role_messages_in_order": [
+      { "kind": "user", "text_preview": "jev接入能给你我带来什么" },
+      { "kind": "agent-instructions", "text_preview": "<system-reminder> The following workspace instructions may be relevant..." },
+      { "kind": "skill-catalog", "text_preview": "<system-reminder> A skill is a reusable set of task-specific instructions..." },
+      { "kind": "user", "text_preview": "官网排队要多久" },
+      { "kind": "user", "text_preview": "给我vercel的网址" },
+      { "kind": "user", "text_preview": "10美元起步，官网的最低充值是多少" }
+    ],
+    "_consequences_before_fix": [
+      "Budget reset: every `subagent-settled` and every `plugin (hindsight)` injection started a new 'user task', so `assessmentsUsed` was zeroed several times per real task. The 3-per-task ceiling silently stopped existing, and because a reset is not an error and writes no row, the log looked healthy throughout.",
+      "Fabricated goal: `goal` takes the FIRST non-excluded user-role message. In this session the second one is an `agent-instructions` block, so on any turn where the human's message was not first, Jev would be asked whether a SYSTEM REMINDER had been completed."
+    ],
+    "_fix": "An allow-list: `isUserAuthored(source)` returns `source?.kind === 'user'` (lib/taskstate.js), used by both `deriveEvents`' goal extraction and the outcome-backfill task boundary in lib/index.js. A future synthetic source then defaults to 'not the human', failing toward assessing less rather than toward an unbounded budget.",
+    "_dsh_contract": "DSH's own MessageSourceMap (@deepseek-ai/dsh-agent-presets/lib/typert.host.js:613) lists: user, plugin, model, tool, 'user-rpc' (which maps to kind 'user'), 'agent-message', 'subagent-settled', 'skill-invocation', 'team-message', goal, 'session-reference'. Note that the map is a TYPE declaration; the runtime kinds actually observed are the ones counted above, including several (agent-instructions, skill-catalog) that the declaration does not name at all — which is itself the reason an allow-list is the safe shape."
+  },
+  "_exit_attribution_measurement": {
+    "_why": "The SECOND fabricated-pass bug, and subtler than truncation: DSH's `[exit code: N]` marker carries the SHELL HOST's exit code, which in Windows PowerShell belongs to the LAST STATEMENT. An agent that wraps a call to capture its output therefore hides the real result. On the first real-Jev round a subagent wrote that wrapper, and a suite that really failed (npm exit 1) was recorded as `tests_passed: true` — the plugin's own evidence was wrong while the agent's claim was honest.",
+    "_measured_by": "tools/measure-exit-shapes.mjs — each shape is RUN for real in a child shell, and the observed exit code is compared against the true outcome.",
+    "_shell": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe — PowerShell 7 is NOT installed on this machine, and `dsh-pwsh-local`'s resolver falls back to 5.1, so 5.1's behaviour is the contract that matters.",
+    "_faithful_shapes": [
+      { "command": "npm test", "observed": 1 },
+      { "command": "npm test 2>&1 | Select-Object -Last 3", "observed": 1 },
+      { "command": "cmd /c \"npm test\"", "observed": 1 },
+      { "command": "cd <dir>; npm test", "observed": 1 },
+      { "command": "npm test; exit $LASTEXITCODE", "observed": 1 }
+    ],
+    "_masking_shapes": [
+      { "command": "npm test; Write-Output \"after\"", "observed": 0, "note": "the failure is invisible; the host reports the Write-Output" },
+      { "command": "npm test > $null 2>&1; Write-Output \"after\"", "observed": 0 },
+      { "command": "$out = npm test 2>&1; $code = $LASTEXITCODE; Write-Output \"...\"", "observed": 0, "note": "THE SHAPE A REAL SUBAGENT WROTE — verbatim, session ebc5ed01" },
+      { "command": "$out = npm test 2>&1 | Out-String; ...; $out | Set-Content ...; Write-Output \"done\"", "observed": 0 }
+    ],
+    "_rule_derived": "With ONE statement the marker is the command's own code. With SEVERAL, the code belongs to the last one, unless that last statement is an explicit `exit $LASTEXITCODE` passthrough. `exitCodeIsAttributable(command, kind)` implements exactly this and matches every measured shape.",
+    "_verdict_rule": "A command whose code cannot be attributed is recorded with `exit_attributable: false` and votes for NEITHER outcome, so `tests_passed` becomes null (unknown). Recording it as true was the bug; recording it as false would fabricate an accusation. `lib/taskstate.js` derives the tri-state, and `lib/log.js` writes `facts.unattributable_exits_n` so the rate is measurable offline.",
+    "_verified_against_real_commands": "tools/replay-real-commands.mjs replays the verbatim commands from sessions 3d99a91c and ebc5ed01: the wrapped commands now yield UNKNOWN, the unwrapped one still yields FAILED, and no failed run is misread as a verdict."
+  }
+}

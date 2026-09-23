@@ -1,0 +1,28 @@
+# Never commit a secret. `TYPESAFE_API_KEY` is read from the environment by
+# lib/jev.js, and the convenient way to set it locally is a `.env` file — which is
+# exactly the kind of file that ends up in a commit by accident.
+#
+# This matters more than usual here: two TypeSafe/Vercel keys were already leaked in
+# plaintext during this project's earlier command-gate attempt, precisely because a
+# key pasted into a note is indistinguishable from a key pasted into config.
+.env
+.env.*
+!.env.example
+
+# Local logs and analysis output. These contain excerpts of the user's own prompts
+# (the ground-truth backfill), so they are not shareable by default.
+*.jsonl
+!test/fixtures/*.json
+assessments*.json
+analysis*.json
+
+# Scratch and OS noise.
+node_modules/
+*.log
+Thumbs.db
+.DS_Store
+
+# The probes are diagnostics tied to one machine's DSH install; they are kept in the
+# tree deliberately (they document how the real contracts were verified) but their
+# captured output is not.
+tools/_probe-*.out

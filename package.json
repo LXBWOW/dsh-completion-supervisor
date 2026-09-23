@@ -1,0 +1,37 @@
+{
+  "name": "dsh-completion-supervisor",
+  "version": "0.1.0",
+  "description": "Checks whether an agent's completion claim is actually true: deterministic evidence from the turn, one batched Jev assessment, and a pure policy. Steers only on a clear miss, behind a guard band and a one-steer-per-task budget.",
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "test": "node --test test/pure.test.mjs test/artifacts.test.mjs test/command-output.test.mjs test/health.test.mjs test/integration.test.mjs test/real-fixtures.test.mjs",
+    "analyse": "node tools/analyse.mjs",
+    "build-id": "node tools/build-id.mjs --write",
+    "check-build": "node tools/build-id.mjs --check",
+    "check-text": "node tools/fix-mojibake.mjs --check",
+    "verify-boundary": "node tools/verify-task-boundary.mjs",
+    "set-key": "node tools/set-key.mjs",
+    "key-status": "node tools/set-key.mjs --status",
+    "measure-exits": "node tools/measure-exit-shapes.mjs",
+    "replay-commands": "node tools/replay-real-commands.mjs",
+    "verify-tristate": "node tools/verify-exit-tristate.mjs",
+    "verify-jev": "node tools/verify-jev-round.mjs",
+    "probe-model": "node tools/probe-model-id.mjs",
+    "probe-determinism": "node tools/probe-determinism.mjs",
+    "inspect": "node tools/inspect-asked.mjs",
+    "compare": "node tools/compare-versions.mjs",
+    "verify-artifacts": "node tools/verify-artifacts.mjs",
+    "scan-tools": "node tools/scan-tool-schemas.mjs",
+    "session-blocks": "node tools/decode-session.mjs"
+  },
+  "dependencies": {}
+}

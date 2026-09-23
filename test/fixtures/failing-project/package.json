@@ -1,0 +1,10 @@
+{
+  "name": "supervisor-failing-project",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A deliberately failing test project. It exists so `npm test` can produce a GENUINE non-zero exit status, which is the only way to verify that the completion supervisor records tests_run/tests_passed from a real failure. Nothing here is a product; delete it freely.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}

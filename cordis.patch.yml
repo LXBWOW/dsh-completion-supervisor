@@ -1,0 +1,47 @@
+# dsh-completion-supervisor bundle patch:
+# inserts the host-side plugin (lib/index.js via the package root export).
+#
+# NOTE: this row is appended AFTER the other bundles in dsh.profile.bundles, so a
+# later-loading bundle cannot clobber it. Order matters in dsh: a patch that names
+# an existing `id` REPLACES that row's whole config (no deep merge).
+#
+# shadowMode was true through three sampling rounds. It is false now, and the gate was an offline
+# REPLAY rather than a sample count: `decide()` is pure, so all 12 labelled rows were re-judged under
+# the new policy without calling Jev, and the three numbers that had to hold did — 0/8 completed tasks
+# steered, 4/4 unfinished tasks caught, and P6 absent from every `rule` column.
+#
+# `node tools/score-round.mjs` reproduces that table from the log at any time.
+- insert:
+    - id: completion-supervisor
+      name: dsh-completion-supervisor
+      config:
+        enabled: true
+        # false = the policy may steer a turn.
+        shadowMode: false
+        # Hard ceiling on assessments per user task; the normal target is 1.
+        maxAssessments: 3
+        # Hard ceiling on ACTUAL steers per user task, and deliberately the TIGHTER of the two
+        # budgets: the assessment cap bounds how often we LOOK, this one bounds how often we SPEAK. A
+        # steered turn reaches `turn-stopping` again, so a second assessment of the same task is
+        # expected — a second steer for the same disagreement is a loop, and a loop is worse than any
+        # single missed intervention. Once it is spent, later turns of the task are recorded with
+        # `steer_suppressed: per_task_steer_budget` and allowed to end normally.
+        maxSteersPerTask: 1
+        # Keeps a hung Jev socket off the turn-close path.
+        #
+        # 5000, higher than the tail the log actually shows — the latest five samples ran 353-1195ms,
+        # so this is roughly a 4x margin. A timeout is a LOST OBSERVATION, not merely a slow row, and
+        # with intervention on it also means a turn that would have been caught is not. Kept at the
+        # calibration value until the log has enough intervening rows to price the slow tail; every
+        # row records `latency_ms`, so that distribution is already accumulating.
+        jevTimeoutMs: 5000
+        # Estimated token ceiling for the TaskState (Jev's own limit is 32k).
+        stateTokenBudget: 12000
+        jevModel: jev-latest
+        # Empty = ~/.dsh/completion-supervisor/assessments.jsonl
+        logPath: ""
+        logEnabled: true
+        # A turn with no tool call has nothing to verify; skipping it is the
+        # single largest source of saved API calls.
+        requireToolCall: true
+        requireRepoChange: false
